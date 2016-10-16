@@ -7,10 +7,9 @@ package com.datastruct.order;
 public class BitMap {
 
     public static void main(String[] args) {
-        int[] a = { 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6,
-                5, 4, 3, 2, 1, 0, 34, 55, 60, 53, 57 };
+        int[] a = { 0, 1, 2, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9,
+                8, 7, 6, 5, 4, 3, 34, 55, 60, 53, 57 };
         sort(a, 60 / 32 + 1);
-
     }
 
     public static void sort(int[] a, int length) {
@@ -18,7 +17,7 @@ public class BitMap {
 
         for (int temp : a) {
             int index = temp / 32;
-            temp = 1 << temp;
+            temp = 1 << (temp % 32);
             bitMap[index] = bitMap[index] | temp;
         }
 

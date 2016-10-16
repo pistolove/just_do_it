@@ -22,7 +22,8 @@ public class TwoBitMap {
             int bitMapValue = bitMap[bitMapIndex];
 
             int residue = temp % 16;// 余数
-            bitMapValue = (bitMapValue >> (residue * 2)) & 3;// 将其他们置 0
+            // 将其他位置为0 3-00000.。。11
+            bitMapValue = (bitMapValue >> (residue * 2)) & 3;
 
             // 没出现过 或出现 一次
             if (bitMapValue == 0 || bitMapValue == 1) {

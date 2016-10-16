@@ -33,7 +33,7 @@ public class MergeSort {
         for (i = 0; i + 2 * gap - 1 < length; i = i + 2 * gap) {
             merge(m, i, i + gap - 1, i + gap * 2 - 1);
         }
-        // 不够两gap的特殊处理
+        // 不够两gap的特殊处理，少于一个gap的不用处理，因为之前的递归已经排好了
         if (i + gap - 1 < length) {
             merge(m, i, i + gap - 1, length - 1);
         }

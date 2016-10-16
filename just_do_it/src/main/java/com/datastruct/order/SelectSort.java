@@ -19,6 +19,7 @@ public class SelectSort {
                     minIndex = j;
                 }
             }
+            // 交换位置
             a[minIndex] = a[i];
             a[i] = min;
         }

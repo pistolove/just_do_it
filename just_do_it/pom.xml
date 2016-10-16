@@ -242,5 +242,17 @@
 			<artifactId>netty-all</artifactId>
 			<version>4.0.23.Final</version>
 		</dependency>
+		 <dependency>
+             <groupId>com.letv.search</groupId>
+             <artifactId>search-recommendation-thrift</artifactId>
+             <version>v1.2.0</version>
+        </dependency>
 	</dependencies>
+	<repositories>
+        <repository>
+           <id>search-maven-repository</id>
+           <name>search-maven-repository</name>
+           <url>http://maven.letv.cn/nexus/content/repositories/thirdparty/</url>
+        </repository>
+     </repositories>
 </project>
