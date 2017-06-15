@@ -3,6 +3,7 @@ package com.rpc.thrift.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -11,20 +12,22 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TNonblockingTransport;
 import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 
 import serving.GenericServing;
-import serving.GenericServing.AsyncClient.Serve_call;
+import serving.GenericServing.AsyncClient.ServeStr_call;
 
 public class Client {
 
     public static void main(String[] args) {
-        // ServerBlockClient();
+        ServerBlockClient();
         // ServerNonBlockClient();
-        ServerNonBlockAsynClient();
+        // ServerNonBlockAsynClient();
+
     }
 
     public static void ServerBlockClient() {
-        TSocket tSocket = new TSocket("127.0.0.1", 10111, 2000);
+        TTransport tSocket = new TSocket("127.0.0.1", 10111, 2000);
         try {
             tSocket.open();
             TProtocol tProtocol = new TBinaryProtocol(tSocket);
@@ -33,7 +36,7 @@ public class Client {
             map.put("1", "1");
             map.put("2", "2");
             map.put("3", "3");
-            System.out.print(client.ServeStr(map));
+            System.out.print("client receive the result:" + client.ServeStr(map));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -69,25 +72,36 @@ public class Client {
             transport = new TNonblockingSocket("127.0.0.1", 10111, 2000);
             GenericServing.AsyncClient client = new GenericServing.AsyncClient(new TBinaryProtocol.Factory(),
                     clientManager, transport);
+
             Map<String, String> map = new HashMap<String, String>();
             map.put("1", "1");
             map.put("2", "2");
             map.put("3", "3");
             client.ServeStr(map, new callback());
-            Thread.currentThread().sleep(10L);
+            Thread.currentThread().sleep(100L);
+            // ListenableFuture
+            GenericServing.AsyncClient.Factory factory = new GenericServing.AsyncClient.Factory(clientManager,
+                    new TBinaryProtocol.Factory());
+            factory.getAsyncClient(transport);
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            transport.close();
         }
     }
 
-    private static class callback implements AsyncMethodCallback<Serve_call> {
+    private static class callback implements AsyncMethodCallback<ServeStr_call> {
 
-        public void onComplete(Serve_call paramT) {
-            System.out.print(paramT.toString());
+        public void onComplete(ServeStr_call paramT) {
+            try {
+                System.out.println(paramT.getResult());
+            } catch (TException e) {
+                e.printStackTrace();
+            }
         }
 
         public void onError(Exception paramException) {
-            System.out.print("22222");
+            paramException.printStackTrace();
         }
     }
 

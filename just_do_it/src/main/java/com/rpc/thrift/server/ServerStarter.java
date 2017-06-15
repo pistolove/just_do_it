@@ -19,12 +19,32 @@ public class ServerStarter {
     private static TProcessor tProcessor = new GenericServing.Processor(new SeviceImpl());
     private static int port = 10111;
 
-    public static void main(String[] args) {
-        // TTSimpleServer();
-        // TTThreadPoolServer();
-        // TTNonblockingServer();
-        // TTHsHaServer();
-        TTThreadedSelectorServer();
+    public static void main(String[] argss) {
+
+        TTSimpleServer();
+    }
+
+    private static class SeviceImpl implements Iface {
+
+        public GenericServingResponse Serve(GenericServingRequest paramGenericServingRequest) throws TException {
+            return null;
+        }
+
+        public RecommendationResponse Recommend(RecommendationRequest paramRecommendationRequest) throws TException {
+            return null;
+        }
+
+        public String ServeStr(Map<String, String> paramMap) throws TException {
+            if (!CollectionUtils.isEmpty(paramMap)) {
+                StringBuilder sb = new StringBuilder();
+                Iterator<String> it = paramMap.keySet().iterator();
+                while (it.hasNext()) {
+                    sb.append(paramMap.get(it.next()));
+                }
+                return sb.toString();
+            }
+            return "your param is null";
+        }
     }
 
     public static void TTSimpleServer() {
@@ -92,26 +112,4 @@ public class ServerStarter {
         }
     }
 
-    private static class SeviceImpl implements Iface {
-
-        public GenericServingResponse Serve(GenericServingRequest paramGenericServingRequest) throws TException {
-            return null;
-        }
-
-        public RecommendationResponse Recommend(RecommendationRequest paramRecommendationRequest) throws TException {
-            return null;
-        }
-
-        public String ServeStr(Map<String, String> paramMap) throws TException {
-            if (!CollectionUtils.isEmpty(paramMap)) {
-                StringBuilder sb = new StringBuilder();
-                Iterator<String> it = paramMap.keySet().iterator();
-                while (it.hasNext()) {
-                    sb.append(paramMap.get(it.next()));
-                }
-                return sb.toString();
-            }
-            return "your param is null";
-        }
-    }
 }

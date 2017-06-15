@@ -1,6 +1,5 @@
 package com.datastruct.search;
 
-
 /**
  * 二分查找
  * @author chenjian
@@ -32,7 +31,7 @@ public class BinarySearch {
      */
     private static int binarySearch(int b[], int start, int end, int goal) {
         if (start <= end) {
-            int mid = (start + end) / 2; // 这里会向下取值，例如7 + 8 /2 =7
+            int mid = (start + end) / 2; // 这里会向下取值，例如(7 + 8) /2 =7
             if (b[mid] == goal) {
                 return mid;
             } else if (b[mid] > goal) {
