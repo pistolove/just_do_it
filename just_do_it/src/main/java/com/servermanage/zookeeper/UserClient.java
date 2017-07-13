@@ -1,5 +1,6 @@
 package com.servermanage.zookeeper;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -31,13 +32,15 @@ public class UserClient {
         while (true) {
             try {
                 List<String> childPath = zk.getChildren(path, null);
+                Collections.sort(childPath);
                 if (!CollectionUtils.isEmpty(childPath)) {
                     for (int i = 0; i < childPath.size(); i++) {
                         String nodeData = new String(zk.getData(path + "/" + childPath.get(i), watcher, null));
-                        System.out.print(nodeData + "      ");
+                        System.out.print(childPath.get(i) + " 节点值 " + nodeData + "      ");
                     }
                     System.out.println();
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
