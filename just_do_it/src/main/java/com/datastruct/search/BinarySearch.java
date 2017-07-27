@@ -12,8 +12,8 @@ public class BinarySearch {
             // System.out.println(goal);
         }
         binarySearch2(b, 0, b.length - 1, 88);
-        System.out.println(binarySearchLow(b, 0, b.length - 1, 5));
-        System.out.println(binarySearchHigh(b, 0, b.length - 1, 7));
+        System.out.println(binarySearch(b, 0, b.length - 1, 4));
+        System.out.println(binarySearch(b, 0, b.length - 1, 7));
 
     }
 
@@ -31,7 +31,7 @@ public class BinarySearch {
      */
     private static int binarySearch(int b[], int start, int end, int goal) {
         if (start <= end) {
-            int mid = (start + end) / 2; // 这里会向下取值，例如(7 + 8) /2 =7
+            int mid = (start + end) >> 1; // 这里会向下取值，例如(7 + 8) /2 =7
             if (b[mid] == goal) {
                 return mid;
             } else if (b[mid] > goal) {
@@ -59,7 +59,7 @@ public class BinarySearch {
      */
     private static int binarySearch2(int b[], int start, int end, int goal) {
         while (start <= end) {
-            int mid = (start + end) / 2;
+            int mid = (start + end) >> 1;
             if (b[mid] == goal) {
                 return mid;
             } else if (b[mid] > goal) {
@@ -80,7 +80,7 @@ public class BinarySearch {
      * @return 返回表示第一个小于goal的元素index值
      */
     private static int binarySearchLow(int b[], int start, int end, int goal) {
-        int mid = (start + end + 1) / 2;
+        int mid = (start + end + 1) >> 1;
         while (start < end) {
             // 下届意味着必须小于goal，所以b[mid]小于goal时，b[mid]满足条件，start=mid即可
             // 但是b[mid]大于等于goal值时，该值肯定不满下届要求，直接通过index-1忽略（也是防止死循环）
@@ -89,7 +89,7 @@ public class BinarySearch {
             } else {
                 end = mid - 1;
             }
-            mid = (start + end + 1) / 2;
+            mid = (start + end + 1) >> 1;
 
         }
         return mid;
@@ -104,7 +104,7 @@ public class BinarySearch {
      * @return 返回表示第一个大于goal的元素index值
      */
     private static int binarySearchHigh(int b[], int start, int end, int goal) {
-        int mid = (start + end) / 2;
+        int mid = (start + end) >> 1;
         while (start < end) {
             // 上届意味着必须大于goal，所以b[mid]大于goal时，满足要求，end移到mid即可
             // 但当b[mid]小于等于goal时，直接index+1略过
@@ -113,7 +113,7 @@ public class BinarySearch {
             } else {
                 start = mid + 1;//
             }
-            mid = (start + end) / 2;
+            mid = (start + end) >> 1;
         }
         return mid;
     }
