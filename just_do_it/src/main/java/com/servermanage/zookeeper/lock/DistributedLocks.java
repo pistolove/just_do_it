@@ -61,59 +61,97 @@ public class DistributedLocks implements Lock {
     }
 
     public void lock() {
+        this.lock(false, 0);
+    }
+
+    public boolean tryLock() {
+        return this.lock(true, 0);
+    }
+
+    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
+        return this.lock(true, time);
+    }
+
+    /**
+     * 尝试获取锁
+     * @param onlyOnce
+     *            true 为尝试一次 false为多次尝试
+     * @param timeout
+     *            ms
+     */
+    private boolean lock(boolean onlyOnce, long timeout) {
         try {
             this.init();
-
-            if (this.tryGetLock()) {
-                System.out.println(Thread.currentThread() + "第一次直接拿到锁了");
-                return;
-            } else {
-                Integer nextOrder = Integer.valueOf(this.waitNodePath.substring(this.waitNodePath.lastIndexOf("/") + 1,
-                        this.waitNodePath.length())) - 1;// 需要监控的节点号
-                StringBuilder nextOrderStr = new StringBuilder();
-                // 序号是0000000001 这种 ，所以补充为10个即可
-                for (int i = 0; i < 10 - String.valueOf(nextOrder).length(); i++) {
-                    nextOrderStr.append("0");
-                }
-                nextOrderStr.append(nextOrder);
-                // 需要监控的前一节点的path
-                String watcherNodePath = this.lockPath + "/" + nextOrderStr.toString();
-
-                this.thread = Thread.currentThread();
-                Watcher watcher = new Watcher() {
-                    public void process(WatchedEvent event) {
-                        LockSupport.unpark(DistributedLocks.this.thread);
+            while (true) {
+                if (this.tryLockOnce()) {
+                    return true;
+                } else {
+                    // 仅尝试一次
+                    if (onlyOnce) {
+                        return false;
                     }
-                };
-                this.zooKeeper.exists(watcherNodePath, watcher);
 
-                // 再次检查，防止前一节点 在监控前已经删除
-                if (this.tryGetLock()) {
-                    return;
+                    String watcherNodePath = this.lockPath + "/" + this.getPreNode();
+                    this.thread = Thread.currentThread();
+                    Watcher watcher = new Watcher() {
+                        public void process(WatchedEvent event) {
+                            LockSupport.unpark(DistributedLocks.this.thread);
+                        }
+                    };
+                    this.zooKeeper.exists(watcherNodePath, watcher);
+
+                    // 再次检查，防止前一节点 在监控前已经删除
+                    if (this.tryLockOnce()) {
+                        return true;
+                    }
+
+                    // 判断阻塞时间
+                    if (timeout > 0) {
+                        LockSupport.parkNanos(timeout);
+                        return false;
+                    } else {
+                        LockSupport.park();
+                    }
                 }
-
-                LockSupport.park(1000 * 30L);
-                System.out.println(Thread.currentThread() + "被唤醒了，拿到锁，执行业务");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        return false;
     }
 
-    private boolean tryGetLock() throws Exception {
+    /**
+     * 尝试获取一次锁
+     * @return
+     * @throws Exception
+     */
+    private boolean tryLockOnce() throws Exception {
+        if (this.waitNodePath.contains(this.getPreNode())) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取当前锁的前一节点，没有则返回当前锁节点
+     * @return
+     */
+    private String getPreNode() throws Exception {
         List<String> nodes = this.zooKeeper.getChildren(this.lockPath, null);
         if (!CollectionUtils.isEmpty(nodes)) {
             Collections.sort(nodes);
-            // 判断当前等待节点是否为最小节点，是即拿到锁
-            if (this.waitNodePath.contains(nodes.get(0))) {
-                System.out.println(Thread.currentThread() + "可以拿到锁了");
-                return true;
+            for (int i = 0; i < nodes.size(); i++) {
+                if (this.waitNodePath.contains(nodes.get(i))) {
+                    if (i == 0) { // 下标为0就返回当前节点
+                        return nodes.get(i);
+                    } else {
+                        return nodes.get(i - 1);
+                    }
+                }
             }
         }
-        return false;
-
+        throw new NullPointerException("zookeeper上无节点存在");
     }
 
     public void unlock() {
@@ -131,14 +169,6 @@ public class DistributedLocks implements Lock {
     }
 
     public void lockInterruptibly() throws InterruptedException {
-    }
-
-    public boolean tryLock() {
-        return false;
-    }
-
-    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-        return false;
     }
 
     public Condition newCondition() {

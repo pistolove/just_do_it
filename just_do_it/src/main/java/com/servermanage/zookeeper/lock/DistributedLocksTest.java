@@ -5,19 +5,20 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
-import org.springframework.util.StringUtils;
 
 import com.servermanage.zookeeper.ZooKeeperUtil;
 
 public class DistributedLocksTest {
 
-    private static final String zkServer = "10.182.192.45:2181,10.100.54.154:2181,10.100.54.155:2181";
+    private static final String zkServer = "10.100.54.155:2181";
     private static final String lockPath = "/letv/chenjian/lock";// /letv/chenjian/lock
     private static final String lockCalPath = "/letv/chenjian/cal";// /letv/chenjian/lock
 
@@ -33,8 +34,8 @@ public class DistributedLocksTest {
     }
 
     static class DistributedLocksThread extends Thread {
-
         private DistributedLocks distributedLocks;
+        private static AtomicInteger count = new AtomicInteger(0);
 
         public DistributedLocksThread(DistributedLocks distributedLocks) {
             this.distributedLocks = distributedLocks;
@@ -42,8 +43,16 @@ public class DistributedLocksTest {
 
         @Override
         public void run() {
-            this.distributedLocks.lock();
             try {
+
+                // this.distributedLocks.lock();
+                if (!this.distributedLocks.tryLock()) {
+                    count.incrementAndGet();
+                    System.out.println(Thread.currentThread() + " 未获取到锁线程数:" + count);
+                    return;
+                }
+
+                long startTime = System.currentTimeMillis();
                 final CountDownLatch connectedSemaphore = new CountDownLatch(1);
                 ZooKeeper zookeeper = new ZooKeeper(zkServer, 300000, new Watcher() {
                     public void process(WatchedEvent event) {
@@ -63,7 +72,6 @@ public class DistributedLocksTest {
                 connectedSemaphore.await();
 
                 ZooKeeperUtil.checkPath(zookeeper, lockCalPath);
-
                 String data = new String(zookeeper.getData(lockCalPath, null, null));
                 if (StringUtils.isEmpty(data)) {
                     data = "1";
@@ -73,7 +81,8 @@ public class DistributedLocksTest {
                 zookeeper.setData(lockCalPath, data.getBytes(), -1);
                 zookeeper.close();
 
-                System.out.println(Thread.currentThread() + " 执行业务完成后data值为:" + data);
+                System.out.println(Thread.currentThread() + " 执行业务后data值:" + data + "    用时:"
+                        + (System.currentTimeMillis() - startTime));
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
