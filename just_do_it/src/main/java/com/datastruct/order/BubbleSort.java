@@ -2,12 +2,13 @@ package com.datastruct.order;
 
 /**
  * 冒泡排序
+ * 
  * @author chenjian
  */
 public class BubbleSort {
     public static void main(String[] args) {
-        int[] test = { 15, 4, 5, 2, 34, 7, 4, 12 };
-        sort(test, 8);
+        int[] test = { 15, 4, 5, 2, 34, 7, 4, 12, 1, 23, 33, 43 };
+        sort(test, test.length);
         for (int a : test) {
             System.out.print(a + " ");
         }

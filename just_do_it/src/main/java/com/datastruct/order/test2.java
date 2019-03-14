@@ -1,5 +1,7 @@
 package com.datastruct.order;
 
+import com.java.test.StringToDouble;
+
 public class test2 {
     public static String a = "11";
     public static final String s = "11" + a;
@@ -13,8 +15,8 @@ public class test2 {
         // System.out.println(test1.s);
         // System.out.println(test1.s == test2.s);
         // System.out.println(test1.s == test2.s.intern());
-        System.out.println(b(new test1().s));
-        System.out.println(test1.s == new test2().sss);
+        System.out.println(b(new StringToDouble().s));
+        System.out.println(StringToDouble.s == new test2().sss);
         String s = new String("Ljava/lang/String");
         System.out.println(s == s.intern());
 
